@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
+
 @Service
 public class MessageService {
 
@@ -15,9 +17,17 @@ public class MessageService {
         this.repository = repository;
     }
 
+    // Skapa meddelande: ID sätts av DB, createdAt sätts här på serversidan
     public Mono<Message> createMessage(Message incoming) {
-        return repository.save(incoming)
-                .doOnSuccess(saved -> log.info("Saved message with id={}", saved.id()))
+        Message entity = new Message(
+                null,                   // id sätts av DB (SERIAL/IDENTITY)
+                incoming.message(),     // text från klienten
+                LocalDateTime.now() ,
+                incoming.pinned()
+        );
+
+        return repository.save(entity)
+                .doOnSuccess(saved -> log.info("Saved message id={} pinned={}", saved.id(), saved.pinned()))
                 .doOnError(err -> log.error("Failed to save message: {}", err.getMessage()));
     }
 

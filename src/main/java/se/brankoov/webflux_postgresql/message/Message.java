@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 public record Message(
         @Id Long id,
         @Column("message") String message,
-        @Column("created_at") LocalDateTime createdAt
+        @Column("created_at") LocalDateTime createdAt,
+        boolean pinned
 ) {
 }
