@@ -1,0 +1,28 @@
+package se.brankoov.webflux_postgresql.message;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
+
+@Service
+public class MessageService {
+
+    private static final Logger log = LoggerFactory.getLogger(MessageService.class);
+    private final MessageRepository repository;
+
+    public MessageService(MessageRepository repository) {
+        this.repository = repository;
+    }
+
+    public Mono<Message> createMessage(Message incoming) {
+        return repository.save(incoming)
+                .doOnSuccess(saved -> log.info("Saved message with id={}", saved.id()))
+                .doOnError(err -> log.error("Failed to save message: {}", err.getMessage()));
+    }
+
+    public Mono<Message> getById(Long id) {
+        return repository.findById(id)
+                .switchIfEmpty(Mono.error(new MessageNotFoundException(id)));
+    }
+}
